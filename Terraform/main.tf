@@ -12,11 +12,11 @@ resource "aws_internet_gateway" "igw" {
 }
 
 # Creating an Elastic IP to associate with NAT Gateway
-resource "aws_eip" "nat_eip" {
-  depends_on = [ aws_internet_gateway.igw ]
+ resource "aws_eip" "nat_eip" {
+   depends_on = [ aws_internet_gateway.igw ]
 }
 
-/*# Creating the NAT Gateway
+# Creating the NAT Gateway
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.nat_eip.id
   subnet_id = aws_subnet.public_subnet1.id
@@ -24,4 +24,58 @@ resource "aws_nat_gateway" "nat_gw" {
     Name = "NAT Gateway"
   }
 }
-*/
+
+
+# Creating the public route table
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.production_vpc.id
+  route {
+    cidr_block = var.all_ipv4_cidr
+    gateway_id = aws_internet_gateway.igw.id
+  }
+  tags = {
+    Name = "Public RT"
+  }
+}
+
+# Creating the private route table
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.production_vpc.id
+  route {
+    cidr_block = var.all_ipv4_cidr
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
+  }
+  tags = {
+    Name = "Private RT"
+  }
+}
+
+# creating 2 public subnets
+resource "aws_subnet" "public_subnet1" {
+  vpc_id = aws_vpc.production_vpc.id
+  cidr_block = var.public_subnet1_cidr
+  map_public_ip_on_launch = true
+  availability_zone = "us-east-1a"
+  tags = {
+    Name= "Public Subnet 1"
+  }
+}
+
+resource "aws_subnet" "public_subnet2" {
+  vpc_id = aws_vpc.production_vpc.id
+  cidr_block = var.public_subnet2_cidr
+  map_public_ip_on_launch = true
+  availability_zone = "us-east-1b"
+  tags = {
+    Name= "Public Subnet 2"
+  }
+}
+
+resource "aws_subnet" "private_subnet" {
+  vpc_id = aws_vpc.production_vpc.id
+  cidr_block = var.private_subnet1_cidr
+  availability_zone = "us-east-1a"
+  tags = {
+    Name= "Private Subnet"
+  }
+}
