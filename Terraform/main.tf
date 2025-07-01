@@ -71,6 +71,7 @@ resource "aws_subnet" "public_subnet2" {
   }
 }
 
+# creating private subnet
 resource "aws_subnet" "private_subnet" {
   vpc_id = aws_vpc.production_vpc.id
   cidr_block = var.private_subnet1_cidr
@@ -79,3 +80,30 @@ resource "aws_subnet" "private_subnet" {
     Name= "Private Subnet"
   }
 }
+
+# creating route table associations
+resource "aws_route_table_association" "public-sub1-associaation" {
+  subnet_id = aws_subnet.public_subnet1.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "public-sub2-association" {
+  subnet_id = aws_subnet.public_subnet2.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "private-sub-associaation" {
+  subnet_id = aws_subnet.private_subnet.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+# Creating Security Groups
+
+# Create Jenkins Security Group
+# resource "aws_security_group" "jenkins-sg" {
+#   name = "Jenkins Security Group"
+#   description = "Allowing SSH and Jenkins Port Traffic to and from the instance"
+#   ingress = {
+
+#   }
+# }
